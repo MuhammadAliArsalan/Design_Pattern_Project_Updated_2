@@ -176,7 +176,7 @@ export default function Instructor() {
           </p>
 
           <Link to="/dashboard/add-course">
-            <p className="mt-1 text-center text-lg font-semibold text-yellow-50">
+            <p className="mt-1 text-center text-lg font-semibold text-blue-50">
               Create a course
             </p>
           </Link>

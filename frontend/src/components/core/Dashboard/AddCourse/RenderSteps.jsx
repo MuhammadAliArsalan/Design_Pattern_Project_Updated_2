@@ -40,9 +40,9 @@ export default function RenderSteps() {
             >
               <div
                 className={`grid  aspect-square w-[34px] place-items-center rounded-full border-[1px] 
-                    ${step === item.id ? "border-yellow-50 bg-blue-900 text-yellow-50"
+                    ${step === item.id ? "border-blue-50 bg-blue-900 text-blue-50"
                     : "border-richblack-700 bg-richblack-800 text-richblack-300"}
-                    ${step > item.id && "bg-blue-50 text-yellow-50"}} `}
+                    ${step > item.id && "bg-blue-50 text-blue-50"}} `}
               >
                 {step > item.id ?
                   (<FaCheck className="font-bold text-richblack-900" />)

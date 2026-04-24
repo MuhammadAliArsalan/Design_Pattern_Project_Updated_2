@@ -28,7 +28,7 @@ export default function SidebarLink({ link, iconName }) {
       to={link.path}
       onClick={handleClick}
       className={`relative px-8 py-2 text-sm font-medium ${matchRoute(link.path)
-        ? "bg-blue-800 text-yellow-50"
+        ? "bg-blue-800 text-blue-50"
         : "text-richblack-300 hover:bg-richblack-700 duration-200"
         } transition-all `}
     >
