@@ -14,6 +14,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 const razorpay = require("../config/RazorpayService");
+const stripe = require("../config/StripeService");
 const eventManager = require("../patterns/observer/EventManager");
 const ApiResponseFactory = require("../patterns/factory/ApiResponseFactory");
 const courseRepo = require("../repositories/CourseRepository");
@@ -21,19 +22,51 @@ const userRepo = require("../repositories/UserRepository");
 const CourseProgress = require("../models/courseProgress");
 const User = require("../models/user");
 
-const _isDemoPaymentMode = () => {
-  const mode = (process.env.PAYMENT_MODE || "").toLowerCase();
-  if (mode === "demo") return true;
-
-  const key = process.env.RAZORPAY_KEY || "";
-  const secret = process.env.RAZORPAY_SECRET || "";
+const _getFrontendBaseUrl = () => {
   return (
-    !key ||
-    !secret ||
-    key.includes("your_razorpay_key") ||
-    secret.includes("your_razorpay_secret")
+    process.env.FRONTEND_URL ||
+    process.env.VITE_APP_BASE_URL?.replace(/\/api\/v1$/, "") ||
+    "http://localhost:5173"
   );
 };
+
+const _getPaymentMode = () => {
+  const mode = (process.env.PAYMENT_MODE || "").toLowerCase();
+
+  if (mode === "demo") return "demo";
+  if (mode === "stripe") return "stripe";
+  if (mode === "razorpay") return "razorpay";
+
+  // Auto-detect based on available credentials
+  const stripeKey = process.env.STRIPE_SECRET_KEY || "";
+  const razorpayKey = process.env.RAZORPAY_KEY || "";
+  const razorpaySecret = process.env.RAZORPAY_SECRET || "";
+
+  // Check if Stripe credentials are valid
+  if (
+    stripeKey &&
+    !stripeKey.includes("your_stripe") &&
+    stripeKey.startsWith("sk_")
+  ) {
+    return "stripe";
+  }
+
+  // Check if Razorpay credentials are valid
+  if (
+    razorpayKey &&
+    razorpaySecret &&
+    !razorpayKey.includes("your_razorpay_key") &&
+    !razorpaySecret.includes("your_razorpay_secret")
+  ) {
+    return "razorpay";
+  }
+
+  return "demo";
+};
+
+const _isDemoPaymentMode = () => _getPaymentMode() === "demo";
+const _isStripeMode = () => _getPaymentMode() === "stripe";
+const _isRazorpayMode = () => _getPaymentMode() === "razorpay";
 
 // ── Wire up observers exactly once when the module is first loaded ────────
 const EnrollmentEmailObserver = require("../patterns/observer/observers/EnrollmentEmailObserver");
@@ -82,7 +115,6 @@ exports.capturePayment = async (req, res) => {
     }
 
     const amount = totalAmount * 100;
-    const currency = "INR";
     const receipt = `rcpt_${Date.now()}`;
 
     if (_isDemoPaymentMode()) {
@@ -91,9 +123,47 @@ exports.capturePayment = async (req, res) => {
         data: {
           id: `order_demo_${Date.now()}`,
           amount,
-          currency,
+          currency: "PKR",
           receipt,
           isDemo: true,
+        },
+      });
+    }
+
+    if (_isStripeMode()) {
+      // ── SINGLETON: create Stripe Checkout Session ──────────────────
+      const session = await stripe.createCheckoutSession(
+        [
+          {
+            price_data: {
+              currency: "pkr",
+              product_data: {
+                name: `StudyNotion course purchase`,
+                description: `Course IDs: ${coursesId.join(", ")}`,
+              },
+              unit_amount: amount,
+            },
+            quantity: 1,
+          },
+        ],
+        {
+          successUrl: `${_getFrontendBaseUrl()}/dashboard/enrolled-courses?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${_getFrontendBaseUrl()}/dashboard/cart`,
+          metadata: {
+            coursesId: coursesId.join(","),
+            userId: userId.toString(),
+            receipt,
+          },
+        },
+      );
+
+      return ApiResponseFactory.success(res, {
+        message: "Checkout session created",
+        data: {
+          id: session.id,
+          url: session.url,
+          receipt,
+          paymentMethod: "stripe",
         },
       });
     }
@@ -101,7 +171,7 @@ exports.capturePayment = async (req, res) => {
     // ── SINGLETON: create Razorpay order ──────────────────────────────
     const paymentResponse = await razorpay.orders.create({
       amount,
-      currency,
+      currency: "PKR",
       receipt,
     });
 
@@ -125,22 +195,95 @@ exports.verifyPayment = async (req, res) => {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
+      stripe_payment_intent_id,
+      stripe_payment_intent_client_secret,
+      stripe_checkout_session_id,
       coursesId,
     } = req.body;
     const userId = req.user.id;
 
+    if (_isDemoPaymentMode()) {
+      if (!coursesId || !userId) {
+        return ApiResponseFactory.badRequest(
+          res,
+          "Payment failed — missing data",
+        );
+      }
+
+      await _enrollStudents(coursesId, userId);
+      return ApiResponseFactory.success(res, {
+        message: "Demo payment verified and student enrolled",
+      });
+    }
+
+    // ── STRIPE VERIFICATION ──────────────────────────────────────────
+    if (_isStripeMode()) {
+      const sessionId =
+        stripe_checkout_session_id ||
+        stripe_payment_intent_id ||
+        stripe_payment_intent_client_secret;
+
+      if (!sessionId) {
+        return ApiResponseFactory.badRequest(
+          res,
+          "Payment failed — missing Stripe session ID",
+        );
+      }
+
+      try {
+        const session = await stripe.retrieveCheckoutSession(sessionId);
+
+        if (session.payment_status !== "paid") {
+          return ApiResponseFactory.badRequest(
+            res,
+            `Payment failed — status: ${session.payment_status}`,
+          );
+        }
+
+        const metadataCoursesId = session.metadata?.coursesId
+          ? session.metadata.coursesId.split(",").filter(Boolean)
+          : coursesId;
+
+        if (!metadataCoursesId || metadataCoursesId.length === 0) {
+          return ApiResponseFactory.badRequest(
+            res,
+            "Payment failed — missing course data in Stripe session",
+          );
+        }
+
+        if (
+          session.metadata?.userId &&
+          session.metadata.userId !== userId.toString()
+        ) {
+          return ApiResponseFactory.badRequest(
+            res,
+            "Payment verification failed — user mismatch",
+          );
+        }
+
+        // Enroll student
+        await _enrollStudents(metadataCoursesId, userId);
+
+        return ApiResponseFactory.success(res, {
+          message: "Payment verified and student enrolled",
+          data: {
+            checkoutSessionId: session.id,
+          },
+        });
+      } catch (stripeError) {
+        return ApiResponseFactory.badRequest(
+          res,
+          "Stripe verification failed: " + stripeError.message,
+        );
+      }
+    }
+
+    // ── RAZORPAY VERIFICATION ────────────────────────────────────────
     if (!coursesId || !userId) {
       return ApiResponseFactory.badRequest(
         res,
         "Payment failed — missing data",
       );
-    }
-
-    if (_isDemoPaymentMode()) {
-      await _enrollStudents(coursesId, userId);
-      return ApiResponseFactory.success(res, {
-        message: "Demo payment verified and student enrolled",
-      });
     }
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -229,7 +372,7 @@ exports.sendPaymentSuccessEmail = async (req, res) => {
       student.email,
       "Payment Received",
       `<p>Hi ${student.firstName},</p>
-       <p>Your payment of ₹${amount / 100} has been received.</p>
+       <p>Your payment of PKR ${amount / 100} has been received.</p>
        <p>Order ID: ${orderId} | Payment ID: ${paymentId}</p>`,
     );
 

@@ -1,54 +1,54 @@
-import { useEffect, useState } from "react"
-import { useSelector } from "react-redux"
-import { Link } from "react-router-dom"
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
-import { fetchInstructorCourses } from "../../../services/operations/courseDetailsAPI"
-import { getInstructorData } from "../../../services/operations/profileAPI"
-import InstructorChart from "./InstructorDashboard/InstructorChart"
-import Img from "./../../common/Img"
+import { fetchInstructorCourses } from "../../../services/operations/courseDetailsAPI";
+import { getInstructorData } from "../../../services/operations/profileAPI";
+import InstructorChart from "./InstructorDashboard/InstructorChart";
+import Img from "./../../common/Img";
 
 export default function Instructor() {
-  const { token } = useSelector((state) => state.auth)
-  const { user } = useSelector((state) => state.profile)
+  const { token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.profile);
 
-  const [loading, setLoading] = useState(false)
-  const [instructorData, setInstructorData] = useState([])
-  const [courses, setCourses] = useState([])
+  const [loading, setLoading] = useState(false);
+  const [instructorData, setInstructorData] = useState([]);
+  const [courses, setCourses] = useState([]);
 
   // get Instructor Data
   useEffect(() => {
-  ;(async () => {
-    setLoading(true)
+    (async () => {
+      setLoading(true);
 
-    try {
-      const instructorApiData = await getInstructorData(token)
-      console.log("INSTRUCTOR API RESPONSE:", instructorApiData)
+      try {
+        const instructorApiData = await getInstructorData(token);
+        console.log("INSTRUCTOR API RESPONSE:", instructorApiData);
 
-      const result = await fetchInstructorCourses(token)
-      console.log("INSTRUCTOR COURSES API RESPONSE:", result)
+        const result = await fetchInstructorCourses(token);
+        console.log("INSTRUCTOR COURSES API RESPONSE:", result);
 
-      setInstructorData(instructorApiData?.data || [])
-      setCourses(result || [])   // ✅ FIX HERE
-    } catch (error) {
-      console.log("INSTRUCTOR PAGE ERROR:", error)
-      setInstructorData([])
-      setCourses([])
-    }
+        setInstructorData(instructorApiData?.data || []);
+        setCourses(result || []); // ✅ FIX HERE
+      } catch (error) {
+        console.log("INSTRUCTOR PAGE ERROR:", error);
+        setInstructorData([]);
+        setCourses([]);
+      }
 
-    setLoading(false)
-  })()
-}, [token])
+      setLoading(false);
+    })();
+  }, [token]);
 
   // ✅ SAFE REDUCE CALCULATIONS
   const totalAmount = instructorData?.reduce(
     (acc, curr) => acc + (curr.totalAmountGenerated || 0),
-    0
-  )
+    0,
+  );
 
   const totalStudents = instructorData?.reduce(
     (acc, curr) => acc + (curr.totalStudentsEnrolled || 0),
-    0
-  )
+    0,
+  );
 
   // skeleton loading
   const skItem = () => {
@@ -64,8 +64,8 @@ export default function Instructor() {
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div>
@@ -119,7 +119,7 @@ export default function Instructor() {
                 <div>
                   <p className="text-lg text-richblack-200">Total Income</p>
                   <p className="text-3xl font-semibold text-richblack-50">
-                    Rs. {totalAmount}
+                    PKR {totalAmount}
                   </p>
                 </div>
               </div>
@@ -160,7 +160,7 @@ export default function Instructor() {
                       </p>
                       <p className="text-xs text-richblack-300">|</p>
                       <p className="text-xs font-medium text-richblack-300">
-                        Rs. {course.price}
+                        PKR {course.price}
                       </p>
                     </div>
                   </div>
@@ -183,5 +183,5 @@ export default function Instructor() {
         </div>
       )}
     </div>
-  )
+  );
 }

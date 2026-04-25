@@ -13,6 +13,7 @@ const {
   isStudent,
 } = require("../middleware/auth");
 
+// Regular authenticated routes
 router.post("/capturePayment", auth, isStudent, capturePayment);
 router.post("/verifyPayment", auth, isStudent, verifyPayment);
 router.post(

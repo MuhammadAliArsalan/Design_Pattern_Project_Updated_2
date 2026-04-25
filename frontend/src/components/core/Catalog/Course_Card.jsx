@@ -1,27 +1,25 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react";
 // Icons
 // import { FaRegStar, FaStar } from "react-icons/fa"
 // import ReactStars from "react-rating-stars-component"
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
-import GetAvgRating from "../../../utils/avgRating"
-import RatingStars from "../../common/RatingStars"
-import Img from './../../common/Img';
-
-
+import GetAvgRating from "../../../utils/avgRating";
+import RatingStars from "../../common/RatingStars";
+import Img from "./../../common/Img";
 
 function Course_Card({ course, Height }) {
   // const avgReviewCount = GetAvgRating(course.ratingAndReviews)
   // console.log(course.ratingAndReviews)
-  const [avgReviewCount, setAvgReviewCount] = useState(0)
+  const [avgReviewCount, setAvgReviewCount] = useState(0);
   useEffect(() => {
-    const count = GetAvgRating(course.ratingAndReviews)
-    setAvgReviewCount(count)
-  }, [course])
+    const count = GetAvgRating(course.ratingAndReviews);
+    setAvgReviewCount(count);
+  }, [course]);
   // console.log("count............", avgReviewCount)
 
   return (
-    <div className='hover:scale-[1.03] transition-all duration-200 z-50 '>
+    <div className="hover:scale-[1.03] transition-all duration-200 z-50 ">
       <Link to={`/courses/${course._id}`}>
         <div className="">
           <div className="rounded-lg">
@@ -52,12 +50,12 @@ function Course_Card({ course, Height }) {
                 {course?.ratingAndReviews?.length} Ratings
               </span>
             </div>
-            <p className="text-xl text-richblack-5">Rs. {course?.price}</p>
+            <p className="text-xl text-richblack-5">PKR {course?.price}</p>
           </div>
         </div>
       </Link>
     </div>
-  )
+  );
 }
 
-export default Course_Card
+export default Course_Card;

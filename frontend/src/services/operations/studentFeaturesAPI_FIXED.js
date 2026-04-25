@@ -98,12 +98,89 @@ export async function buyCourse(
 
     // ════════════════ STRIPE MODE ════════════════
     if (isStripeMode()) {
-      if (!orderData.url) {
-        throw new Error("Stripe checkout session URL not found");
+      // Load Stripe.js
+      const stripeLoaded = await loadScript("https://js.stripe.com/v3/");
+      if (!stripeLoaded) {
+        toast.error("Stripe SDK failed to load");
+        toast.dismiss(toastId);
+        return;
       }
 
+      const stripe = window.Stripe(
+        import.meta.env.VITE_APP_STRIPE_PUBLISHABLE_KEY,
+      );
+
+      // Use test card for Stripe
+      // Successful payment: 4242 4242 4242 4242
+      // Failed payment: 4000 0000 0000 0002
+      const testCardNumber = "4242424242424242";
+      const testExpiry = "12/25";
+      const testCVC = "123";
+
+      // Create payment method with test card
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
+        type: "card",
+        card: {
+          number: testCardNumber,
+          exp_month: 12,
+          exp_year: 25,
+          cvc: testCVC,
+        },
+        billing_details: {
+          name: userDetails.firstName,
+          email: userDetails.email,
+        },
+      });
+
+      if (error) {
+        toast.error(`Card error: ${error.message}`);
+        console.log("Card creation failed: ", error);
+        toast.dismiss(toastId);
+        return;
+      }
+
+      // Confirm payment with PaymentIntent
+      const { error: confirmError, paymentIntent } =
+        await stripe.confirmCardPayment(orderData.clientSecret, {
+          payment_method: paymentMethod.id,
+        });
+
+      if (confirmError) {
+        toast.error(`Payment error: ${confirmError.message}`);
+        console.log("Payment confirmation failed: ", confirmError);
+        toast.dismiss(toastId);
+        return;
+      }
+
+      if (
+        paymentIntent.status !== "succeeded" &&
+        paymentIntent.status !== "processing"
+      ) {
+        toast.error(`Payment failed with status: ${paymentIntent.status}`);
+        toast.dismiss(toastId);
+        return;
+      }
+
+      // Send success email
+      sendPaymentSuccessEmail(
+        {
+          stripe_payment_intent_id: paymentIntent.id,
+        },
+        orderData.amount,
+        token,
+      );
+
+      // Verify payment
+      await verifyPayment(
+        {
+          stripe_payment_intent_id: paymentIntent.id,
+          coursesId,
+        },
+        token,
+        navigate,
+        dispatch,
+      );
       toast.dismiss(toastId);
-      window.location.href = orderData.url;
       return;
     }
 
@@ -156,48 +233,6 @@ export async function buyCourse(
     );
   }
   toast.dismiss(toastId);
-}
-
-// ================ finalize Stripe Checkout Session ================
-export async function finalizeStripeCheckout(
-  token,
-  sessionId,
-  navigate,
-  dispatch,
-) {
-  const toastId = toast.loading("Finalizing Payment....");
-  dispatch(setPaymentLoading(true));
-
-  try {
-    const response = await apiConnector(
-      "POST",
-      COURSE_VERIFY_API,
-      {
-        stripe_checkout_session_id: sessionId,
-      },
-      {
-        Authorization: `Bearer ${token}`,
-      },
-    );
-
-    if (!response.data.success) {
-      throw new Error(response.data.message);
-    }
-
-    toast.success("Payment successful, you are added to the course");
-    dispatch(resetCart());
-    navigate("/dashboard/enrolled-courses", { replace: true });
-  } catch (error) {
-    console.log("STRIPE CHECKOUT FINALIZE ERROR....", error);
-    toast.error(
-      error.response?.data?.message ||
-        error.message ||
-        "Could not verify Payment",
-    );
-  }
-
-  toast.dismiss(toastId);
-  dispatch(setPaymentLoading(false));
 }
 
 // ================ send Payment Success Email ================
