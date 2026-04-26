@@ -64,7 +64,7 @@ class UserRepository extends BaseRepository {
 
   async enrollInCourse(userId, courseId, courseProgressId) {
     return this.updateById(userId, {
-      $push: { courses: courseId, courseProgress: courseProgressId },
+      $addToSet: { courses: courseId, courseProgress: courseProgressId },
     });
   }
 }

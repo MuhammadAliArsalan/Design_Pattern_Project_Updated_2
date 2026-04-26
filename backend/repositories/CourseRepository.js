@@ -59,7 +59,7 @@ class CourseRepository extends BaseRepository {
   }
 
   async enrollStudent(courseId, userId) {
-    return this.updateById(courseId, { $push: { studentsEnrolled: userId } });
+    return this.updateById(courseId, { $addToSet: { studentsEnrolled: userId } });
   }
 
   async unenrollStudent(courseId, userId) {

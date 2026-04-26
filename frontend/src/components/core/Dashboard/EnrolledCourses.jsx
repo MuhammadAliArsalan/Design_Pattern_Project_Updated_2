@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import ProgressBar from "@ramonak/react-progress-bar"
 import { useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
+import toast from "react-hot-toast"
 
 import { getUserEnrolledCourses } from "../../../services/operations/profileAPI"
+import { verifyStripeCheckoutSession } from "../../../services/operations/studentFeaturesAPI"
 import Img from './../../common/Img';
 
 
@@ -13,6 +15,36 @@ export default function EnrolledCourses() {
   const navigate = useNavigate()
 
   const [enrolledCourses, setEnrolledCourses] = useState(null)
+  const location = useLocation()
+
+  const hasPlayableLecture = (course) => {
+    const firstSection = course?.courseContent?.find(
+      (section) => section?._id && Array.isArray(section.subSection) && section.subSection.length > 0,
+    )
+    const firstSubSection = firstSection?.subSection?.find((sub) => sub?._id)
+    return !!firstSection && !!firstSubSection
+  }
+
+  const openEnrolledCourse = (course) => {
+    const firstSection = course?.courseContent?.find(
+      (section) => section?._id && Array.isArray(section.subSection) && section.subSection.length > 0,
+    )
+    const firstSubSection = firstSection?.subSection?.find((sub) => sub?._id)
+
+    if (firstSection && firstSubSection) {
+      navigate(
+        `/view-course/${course?._id}/section/${firstSection._id}/sub-section/${firstSubSection._id}`,
+      )
+      return
+    }
+
+    if (course?._id) {
+      navigate(`/courses/${course._id}`)
+      return
+    }
+
+    toast.error("Could not open this enrolled course because no valid content was found.")
+  }
 
   // fetch all users enrolled courses
   const getEnrolledCourses = async () => {
@@ -23,6 +55,33 @@ export default function EnrolledCourses() {
       console.log("Could not fetch enrolled courses.")
     }
   };
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search)
+    const sessionId = searchParams.get("session_id")
+
+    if (!sessionId || !token) {
+      return
+    }
+
+    const verifyStripeSession = async () => {
+      try {
+        const response = await verifyStripeCheckoutSession(sessionId, token)
+        if (response?.data?.success) {
+          toast.success("Stripe payment confirmed and course enrollment successful.")
+          await getEnrolledCourses()
+          window.history.replaceState({}, document.title, "/dashboard/enrolled-courses")
+        } else {
+          throw new Error(response?.data?.message || "Stripe session verification failed")
+        }
+      } catch (error) {
+        console.log("Stripe verification error:", error)
+        toast.error("Could not verify Stripe payment. Please contact support.")
+      }
+    }
+
+    verifyStripeSession()
+  }, [location.search, token])
 
   useEffect(() => {
     getEnrolledCourses();
@@ -90,11 +149,7 @@ export default function EnrolledCourses() {
               >
                 <div
                   className="flex sm:w-[45%] cursor-pointer items-center gap-4 px-5 py-3"
-                  onClick={() => {
-                    navigate(
-                      `/view-course/${course?._id}/section/${course.courseContent?.[0]?._id}/sub-section/${course.courseContent?.[0]?.subSection?.[0]?._id}`
-                    )
-                  }}
+                  onClick={() => openEnrolledCourse(course)}
                 >
                   <Img
                     src={course.thumbnail}
@@ -109,6 +164,11 @@ export default function EnrolledCourses() {
                         ? `${course.courseDescription.slice(0, 50)}...`
                         : course.courseDescription}
                     </p>
+                    {!hasPlayableLecture(course) && (
+                      <span className="inline-flex items-center rounded-full bg-yellow-900 px-2 py-1 text-xs text-yellow-100">
+                        No lecture available
+                      </span>
+                    )}
                   </div>
                 </div>
 

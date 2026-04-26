@@ -23,6 +23,7 @@ require('dotenv').config();
 const database   = require('./config/Database');       // Singleton
 const cloudinary = require('./config/CloudinaryService'); // Singleton (auto-configures)
 const razorpay   = require('./config/RazorpayService');   // Singleton (auto-configures)
+const stripe     = require('./config/StripeService');    // Singleton (auto-configures)
 const mailer     = require('./config/MailTransporter');   // Singleton (auto-configures)
 
 // ── Routes ────────────────────────────────────────────────────────────────

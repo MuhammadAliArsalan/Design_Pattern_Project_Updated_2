@@ -13,8 +13,16 @@ const {
 
 const isDemoPaymentMode = () => {
   const mode = (import.meta.env.VITE_APP_PAYMENT_MODE || "").toLowerCase();
+
+  if (mode === "demo") return true;
+  if (mode === "stripe") return false;
+  if (mode === "razorpay") {
+    const key = import.meta.env.VITE_APP_RAZORPAY_KEY;
+    return !key || key.includes("your_razorpay_key");
+  }
+
   const key = import.meta.env.VITE_APP_RAZORPAY_KEY;
-  return mode === "demo" || !key || key.includes("your_razorpay_key");
+  return !key || key.includes("your_razorpay_key");
 };
 
 function loadScript(src) {
@@ -62,7 +70,8 @@ export async function buyCourse(
       throw new Error("Invalid order response from server");
     }
 
-    const demoMode = orderData.isDemo || isDemoPaymentMode();
+    const isStripeOrder = orderData.paymentMethod === "stripe";
+    const demoMode = orderData.isDemo || (!isStripeOrder && isDemoPaymentMode());
     if (demoMode) {
       await verifyPayment(
         {
@@ -75,6 +84,14 @@ export async function buyCourse(
         navigate,
         dispatch,
       );
+      return;
+    }
+
+    if (isStripeOrder) {
+      if (!orderData.url) {
+        throw new Error("Stripe checkout session URL is missing");
+      }
+      window.location.href = orderData.url;
       return;
     }
 
@@ -169,4 +186,15 @@ async function verifyPayment(bodyData, token, navigate, dispatch) {
   }
   toast.dismiss(toastId);
   dispatch(setPaymentLoading(false));
+}
+
+export async function verifyStripeCheckoutSession(sessionId, token) {
+  return apiConnector(
+    "POST",
+    COURSE_VERIFY_API,
+    { stripe_checkout_session_id: sessionId },
+    {
+      Authorization: `Bearer ${token}`,
+    },
+  );
 }
