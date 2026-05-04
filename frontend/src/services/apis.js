@@ -51,6 +51,7 @@ export const ratingsEndpoints = {
 // CATAGORIES API
 export const categories = {
   CATEGORIES_API: BASE_URL + "/course/showAllCategories",
+  CREATE_CATEGORY_API: BASE_URL + "/course/createCategory",
 }
 
 // CATEGORY PAGE DATA
@@ -68,4 +69,24 @@ export const settingsEndpoints = {
   UPDATE_PROFILE_API: BASE_URL + "/profile/updateProfile",
   CHANGE_PASSWORD_API: BASE_URL + "/auth/changepassword",
   DELETE_PROFILE_API: BASE_URL + "/profile/deleteProfile",
+}
+
+// ADMIN ENDPOINTS
+export const adminEndpoints = {
+  GET_DASHBOARD_STATS_API: BASE_URL + "/admin/dashboard-stats",
+  GET_ALL_USERS_API: BASE_URL + "/admin/users",
+  GET_USER_DETAILS_API: BASE_URL + "/admin/users",
+  UPDATE_USER_ACCOUNT_TYPE_API: BASE_URL + "/admin/users",
+  APPROVE_INSTRUCTOR_API: BASE_URL + "/admin/users",
+  REJECT_INSTRUCTOR_API: BASE_URL + "/admin/users",
+  TOGGLE_USER_STATUS_API: BASE_URL + "/admin/users",
+  DELETE_USER_API: BASE_URL + "/admin/users",
+  GET_USER_ENROLLMENTS_API: BASE_URL + "/admin/users",
+  GET_ALL_COURSES_ADMIN_API: BASE_URL + "/admin/courses",
+  UPDATE_COURSE_STATUS_API: BASE_URL + "/admin/courses",
+  DELETE_COURSE_ADMIN_API: BASE_URL + "/admin/courses",
+  GET_COURSE_ANALYTICS_API: BASE_URL + "/admin/courses",
+  GET_ALL_CATEGORIES_API: BASE_URL + "/admin/categories",
+  DELETE_CATEGORY_API: BASE_URL + "/admin/categories",
+  GET_PAYMENT_ANALYTICS_API: BASE_URL + "/admin/analytics/payments",
 }

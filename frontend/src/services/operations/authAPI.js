@@ -125,7 +125,11 @@ export function login(email, password, navigate) {
 
       toast.success("Login Successful");
 
-      navigate("/dashboard/my-profile");
+      if (user.accountType === "Admin") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/dashboard/my-profile");
+      }
 
     } catch (error) {
       console.log("LOGIN API ERROR.......", error);

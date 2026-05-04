@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
+// Import required utilities
+const ApiResponseFactory = require('../patterns/factory/ApiResponseFactory');
+
 // Import required controllers
 
 // course controllers 
@@ -97,11 +100,17 @@ router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress)
 
 
 // ********************************************************************************************************
-//                                      Category routes (Only by Admin)
+//                                      Category routes (Admin and Instructor)
 // ********************************************************************************************************
-// Category can Only be Created by Admin
+// Category can be Created by Admin and Instructor
 
-router.post('/createCategory', auth, isAdmin, createCategory);
+router.post('/createCategory', auth, (req, res, next) => {
+  // Allow both Admin and Instructor
+  if (req.user?.accountType !== 'Admin' && req.user?.accountType !== 'Instructor') {
+    return ApiResponseFactory.forbidden(res, 'Only Admin or Instructor can create categories');
+  }
+  next();
+}, createCategory);
 router.get('/showAllCategories', showAllCategories);
 router.post("/getCategoryPageDetails", getCategoryPageDetails)
 

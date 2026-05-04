@@ -32,13 +32,11 @@ const Navbar = () => {
         try {
             setLoading(true)
             const res = await fetchCourseCategories();
-            // const result = await apiConnector("GET", categories.CATEGORIES_API);
-            // const result = await apiConnector('GET', 'http://localhost:4000/api/v1/course/showAllCategories');
-            // console.log("Printing Sublinks result:", result);
-            setSubLinks(res);
+            setSubLinks(Array.isArray(res) ? res : []);
         }
         catch (error) {
             console.log("Could not fetch the category list = ", error);
+            setSubLinks([]);
         }
         setLoading(false)
     }
@@ -109,30 +107,31 @@ const Navbar = () => {
                                             <p>{link.title}</p>
                                             <MdKeyboardArrowDown />
                                             {/* drop down menu */}
-                                            <div className="invisible absolute left-[50%] top-[50%] z-[1000] flex w-[200px] translate-x-[-50%] translate-y-[3em] 
-                                                    flex-col rounded-lg bg-richblack-5 p-4 text-richblack-900 opacity-0 transition-all duration-150 group-hover:visible 
-                                                    group-hover:translate-y-[1.65em] group-hover:opacity-100 lg:w-[300px]"
+                                            <div className="invisible absolute left-0 top-full z-[1000] mt-2 flex w-[200px] flex-col rounded-lg bg-richblack-5 p-3 text-richblack-900 opacity-0 shadow-2xl translate-y-2 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 lg:w-[300px]"
                                             >
-                                                <div className="absolute left-[50%] top-0 z-[100] h-6 w-6 translate-x-[80%] translate-y-[-40%] rotate-45 select-none rounded bg-richblack-5"></div>
-                                                {loading ? (<p className="text-center ">Loading...</p>)
-                                                    : subLinks.length ? (
-                                                        <>
-                                                            {subLinks?.map((subLink, i) => (
+                                                <div className="absolute left-4 top-0 z-[100] h-4 w-4 -translate-y-1 rotate-45 rounded-sm bg-richblack-5"></div>
+                                                {loading ? (
+                                                    <p className="text-center py-4">Loading...</p>
+                                                ) : subLinks.length ? (
+                                                    <>
+                                                        {subLinks.map((subLink, i) => {
+                                                            const slug = encodeURIComponent(
+                                                                subLink.name.trim().split(/\s+/).join("-").toLowerCase()
+                                                            )
+                                                            return (
                                                                 <Link
-                                                                    to={`/category/${subLink.name
-                                                                        .split(" ")
-                                                                        .join("-")
-                                                                        .toLowerCase()}`}
-                                                                    className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50"
                                                                     key={i}
+                                                                    to={`/category/${slug}`}
+                                                                    className="rounded-lg bg-transparent px-4 py-3 text-sm text-richblack-900 transition-colors hover:bg-richblack-50"
                                                                 >
-                                                                    <p>{subLink.name}</p>
+                                                                    {subLink.name}
                                                                 </Link>
-                                                            ))}
-                                                        </>
-                                                    ) : (
-                                                        <p className="text-center">No Courses Found</p>
-                                                    )}
+                                                            )
+                                                        })}
+                                                    </>
+                                                ) : (
+                                                    <p className="text-center py-4">No categories available</p>
+                                                )}
                                             </div>
                                         </div>
                                     ) : (

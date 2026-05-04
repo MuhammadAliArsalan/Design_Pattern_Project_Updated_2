@@ -14,6 +14,7 @@ import ReviewSlider from '../components/common/ReviewSlider'
 import Course_Slider from '../components/core/Category/Course_Slider'
 
 import { getCategoryPageData } from '../services/operations/pageAndComponentData'
+import { getAllCourses } from '../services/operations/courseDetailsAPI'
 
 import { MdOutlineRateReview } from 'react-icons/md'
 import { FaArrowRight } from "react-icons/fa"
@@ -102,20 +103,36 @@ const Home = () => {
 
     // get courses data
     const [CategoryPageData, setCategoryPageData] = useState(null);
+    const [recommendedCourses, setRecommendedCourses] = useState([]);
+    const [popularCourses, setPopularCourses] = useState([]);
     const categoryID = "6506c9dff191d7ffdb4a3fe2" // hard coded
     const dispatch = useDispatch();
 
     useEffect(() => {
         const fetchCategoryPageData = async () => {
-
             const result = await getCategoryPageData(categoryID, dispatch);
             setCategoryPageData(result);
-            // console.log("page data ==== ",CategoryPageData);
         }
         if (categoryID) {
             fetchCategoryPageData();
         }
-    }, [categoryID])
+    }, [categoryID, dispatch]);
+
+    useEffect(() => {
+        const fetchCourseLists = async () => {
+            const courses = await getAllCourses();
+            if (courses?.length) {
+                setRecommendedCourses(courses.slice(0, 8));
+                setPopularCourses(
+                    [...courses]
+                        .sort((a, b) => (b.sold || 0) - (a.sold || 0))
+                        .slice(0, 8),
+                );
+            }
+        };
+
+        fetchCourseLists();
+    }, []);
 
 
     return (
@@ -401,13 +418,13 @@ const Home = () => {
                         <h2 className='text-white mb-6 text-2xl '>
                             Recommended Courses for You
                         </h2>
-                        <Course_Slider Courses={CategoryPageData?.selectedCategory?.courses} />
+                        <Course_Slider Courses={recommendedCourses.length ? recommendedCourses : CategoryPageData?.selectedCategory?.courses} />
                     </div>
                     <div className=' mx-auto box-content w-full max-w-maxContentTab px- py-12 lg:max-w-maxContent'>
                         <h2 className='text-white mb-6 text-2xl '>
                             Popular Courses
                         </h2>
-                        <Course_Slider Courses={CategoryPageData?.mostSellingCourses} />
+                        <Course_Slider Courses={popularCourses.length ? popularCourses : CategoryPageData?.mostSellingCourses} />
                     </div>
 
                     <ExploreMore />

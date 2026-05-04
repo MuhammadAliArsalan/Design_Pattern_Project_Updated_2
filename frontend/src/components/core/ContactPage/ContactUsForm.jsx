@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
-
-import CountryCode from '../../../../data/countrycode.json'
-// import { apiConnector } from "../../../services/apiConnector"
-// import { contactusEndpoint } from "../../../services/apis"
-
+import { sendContactMessage } from "../../../services/operations/contactAPI"
+import CountryCode from "../../../../data/countrycode.json"
 
 const ContactUsForm = () => {
   const [loading, setLoading] = useState(false)
@@ -13,36 +10,37 @@ const ContactUsForm = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitSuccessful },
-  } = useForm()
+  } = useForm({
+    defaultValues: {
+      firstname: "",
+      lastname: "",
+      email: "",
+      countrycode: CountryCode[0]?.code || "+1",
+      phoneNo: "",
+      message: "",
+    },
+  })
 
   const submitContactForm = async (data) => {
-    // console.log("Form Data - ", data)
     try {
       setLoading(true)
-      // const res = await apiConnector(
-      //   "POST",
-      //   contactusEndpoint.CONTACT_US_API,
-      //   data
-      // )
-      // console.log("Email Res - ", res)
-      setLoading(false)
+      const res = await sendContactMessage(data)
+      if (res?.success) {
+        reset({
+          firstname: "",
+          lastname: "",
+          email: "",
+          countrycode: CountryCode[0]?.code || "+1",
+          phoneNo: "",
+          message: "",
+        })
+      }
     } catch (error) {
-      console.log("ERROR WHILE CONATACT US  - ", error.message)
+      console.log("ERROR WHILE CONTACT US - ", error)
+    } finally {
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-      reset({
-        email: "",
-        firstname: "",
-        lastname: "",
-        message: "",
-        phoneNo: "",
-      })
-    }
-  }, [reset, isSubmitSuccessful])
 
   return (
     <form
@@ -111,10 +109,8 @@ const ContactUsForm = () => {
         <div className="flex gap-5">
           <div className="flex w-[81px] flex-col gap-2">
             <select
-              type="text"
-              name="firstname"
-              id="firstname"
-              placeholder="Enter first name"
+              name="countrycode"
+              id="countrycode"
               className="form-style"
               {...register("countrycode", { required: true })}
             >

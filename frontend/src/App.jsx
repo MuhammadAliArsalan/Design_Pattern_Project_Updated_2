@@ -26,11 +26,12 @@ import Settings from "./components/core/Dashboard/Settings/Settings";
 import MyCourses from './components/core/Dashboard/MyCourses';
 import EditCourse from './components/core/Dashboard/EditCourse/EditCourse';
 import Instructor from './components/core/Dashboard/Instructor';
-
+import AdminDashboard from "./pages/Admin/AdminDashboard";
 
 import Cart from "./components/core/Dashboard/Cart/Cart";
 import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
 import AddCourse from "./components/core/Dashboard/AddCourse/AddCourse";
+import CreateCategory from "./components/core/Dashboard/CreateCategory";
 
 import ViewCourse from "./pages/ViewCourse";
 import VideoDetails from './components/core/ViewCourse/VideoDetails';
@@ -158,11 +159,12 @@ function App() {
           )}
 
           {/* Route only for Instructors */}
-          {/* add course , MyCourses, EditCourse*/}
+          {/* add course , MyCourses, EditCourse, Create Category */}
           {user?.accountType === ACCOUNT_TYPE.INSTRUCTOR && (
             <>
               <Route path="dashboard/instructor" element={<Instructor />} />
               <Route path="dashboard/add-course" element={<AddCourse />} />
+              <Route path="dashboard/create-category" element={<CreateCategory />} />
               <Route path="dashboard/my-courses" element={<MyCourses />} />
               <Route path="dashboard/edit-course/:courseId" element={<EditCourse />} />
             </>
@@ -186,8 +188,11 @@ function App() {
           )}
         </Route>
 
-
-
+        {/* Admin Dashboard */}
+        <Route
+          path="admin-dashboard"
+          element={<AdminDashboard />}
+        />
 
         {/* Page Not Found (404 Page ) */}
         <Route path="*" element={<PageNotFound />} />
