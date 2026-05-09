@@ -10,8 +10,8 @@ export default function AdminSidebar({ activeTab, setActiveTab }) {
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: FiHome },
-    { id: "users", label: "User Management", icon: FiUsers },
-    { id: "courses", label: "Course Management", icon: FiBook },
+    { id: "users", label: "Users", icon: FiUsers },
+    { id: "courses", label: "Courses", icon: FiBook },
     { id: "analytics", label: "Analytics", icon: FiBarChart },
   ]
 
@@ -23,8 +23,8 @@ export default function AdminSidebar({ activeTab, setActiveTab }) {
     <div className="w-64 bg-white shadow-lg min-h-screen p-6">
       {/* Logo */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-blue-600">StudySync Admin</h1>
-        <p className="text-sm text-gray-600 mt-2">Control Panel</p>
+        <h1 className="text-2xl font-bold text-blue-600">StudySync</h1>
+        <p className="text-sm text-gray-600 mt-2">Admin Panel</p>
       </div>
 
       {/* Menu Items */}

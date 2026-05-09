@@ -36,7 +36,8 @@ router.get('/dashboard-stats', auth, getDashboardStats);
 // =====================================
 
 // Get all users
-router.get('/users', auth, getAllUsers);
+// router.get('/users', auth, getAllUsers);
+router.get('/users', auth, isAdmin, getAllUsers);
 
 // Get user details
 router.get('/users/:userId', auth, getUserDetails);

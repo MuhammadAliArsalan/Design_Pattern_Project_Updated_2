@@ -22,8 +22,20 @@ const {
 } = adminEndpoints
 
 // ================= UTIL =================
-const buildUrl = (base, params) => {
-  const query = new URLSearchParams(params || {}).toString()
+// const buildUrl = (base, params) => {
+//   const query = new URLSearchParams(params || {}).toString()
+//   return query ? `${base}?${query}` : base
+// }
+
+const buildUrl = (base, params = {}) => {
+  const filteredParams = Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) => value !== undefined && value !== null && value !== ""
+    )
+  )
+
+  const query = new URLSearchParams(filteredParams).toString()
+
   return query ? `${base}?${query}` : base
 }
 
