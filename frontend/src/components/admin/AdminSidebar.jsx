@@ -20,11 +20,11 @@ export default function AdminSidebar({ activeTab, setActiveTab }) {
   }
 
   return (
-    <div className="w-64 bg-white shadow-lg min-h-screen p-6">
+    <div className="w-64 bg-[#161d29] shadow-lg min-h-screen p-6">
       {/* Logo */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-blue-600">StudySync</h1>
-        <p className="text-sm text-gray-600 mt-2">Admin Panel</p>
+        <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
+        <p className="text-sm text-gray-400 text-white mt-2">Active</p>
       </div>
 
       {/* Menu Items */}
@@ -35,11 +35,10 @@ export default function AdminSidebar({ activeTab, setActiveTab }) {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                activeTab === item.id
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === item.id
                   ? "bg-blue-600 text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
+                  : "text-[#838894] hover:bg-[#161d29] hover:text-white"
+                }`}
             >
               <Icon className="text-lg" />
               <span className="font-medium">{item.label}</span>
@@ -52,7 +51,7 @@ export default function AdminSidebar({ activeTab, setActiveTab }) {
       <div className="mt-8 pt-8 border-t">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[#838894] hover:bg-[#1f2937] hover:text-white transition-all"
         >
           <FiLogOut className="text-lg" />
           <span className="font-medium">Logout</span>
