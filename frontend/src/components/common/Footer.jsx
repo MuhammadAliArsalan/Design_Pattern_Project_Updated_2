@@ -54,7 +54,7 @@ const Footer = () => {
               </h4>
               <div className="flex flex-col gap-3 text-slate-400 text-sm">
                 <a
-                  href="mailto:support@studynotion.com"
+                  href="mailto:support@studySync.com"
                   className="hover:text-white transition-all flex items-center gap-2 group"
                 >
                   <span className="group-hover:translate-x-1 transition-transform duration-200">

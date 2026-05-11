@@ -385,7 +385,7 @@ exports.capturePayment = async (req, res) => {
       price_data: {
         currency: "pkr",
         product_data: {
-          name: `StudyNotion course purchase`,
+          name: `StudySync course purchase`,
           description: `Course IDs: ${coursesId.join(", ")}`,
         },
         unit_amount: amount,

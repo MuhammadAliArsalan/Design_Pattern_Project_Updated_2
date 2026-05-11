@@ -170,7 +170,7 @@ export default function CourseManagement({ token }) {
         )}
       </div>
 
-      <div className="flex justify-between text-sm">
+      <div className="flex justify-between text-sm text-white">
         <p>Showing {courses.length} of {pagination.total}</p>
         <div className="flex gap-2">
           <button

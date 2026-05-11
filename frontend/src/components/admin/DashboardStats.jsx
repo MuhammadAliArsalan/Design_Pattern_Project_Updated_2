@@ -34,7 +34,7 @@ export default function DashboardStats({ stats, loading }) {
   return (
     <div className="space-y-6">
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           icon={FiUsers}
           title="Total Users"
@@ -53,12 +53,12 @@ export default function DashboardStats({ stats, loading }) {
           value={stats?.categories || 0}
           bgColor="bg-purple-500"
         />
-        <StatCard
+        {/* <StatCard
           icon={FiDollarSign}
           title="Total Revenue"
           value={`PKR ${(stats?.revenue?.total || 0).toLocaleString()}`}
           bgColor="bg-orange-500"
-        />
+        /> */}
       </div>
 
       {/* User Breakdown */}
@@ -105,8 +105,8 @@ export default function DashboardStats({ stats, loading }) {
               <span className="font-bold text-blue-600">{stats?.enrollments || 0}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-700">Avg per Course</span>
-              <span className="font-bold text-orange-600">PKR {(stats?.revenue?.average || 0).toLocaleString()}</span>
+              {/* <span className="text-gray-700">Avg per Course</span> */}
+              {/* <span className="font-bold text-orange-600">PKR {(stats?.revenue?.average || 0).toLocaleString()}</span> */}
             </div>
           </div>
         </div>

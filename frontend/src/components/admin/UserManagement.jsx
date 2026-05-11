@@ -178,7 +178,7 @@ export default function UserManagement({ token }) {
         )}
       </div>
 
-      <div className="flex justify-between items-center text-sm">
+      <div className="flex justify-between items-center text-sm text-white">
         <p>Showing {users.length} of {pagination.total}</p>
         <div className="flex gap-2">
           <button

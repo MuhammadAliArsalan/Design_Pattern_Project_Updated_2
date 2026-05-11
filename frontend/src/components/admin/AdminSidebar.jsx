@@ -12,7 +12,7 @@ export default function AdminSidebar({ activeTab, setActiveTab }) {
     { id: "dashboard", label: "Dashboard", icon: FiHome },
     { id: "users", label: "Users", icon: FiUsers },
     { id: "courses", label: "Courses", icon: FiBook },
-    { id: "analytics", label: "Analytics", icon: FiBarChart },
+    // { id: "analytics", label: "Analytics", icon: FiBarChart },
   ]
 
   const handleLogout = () => {
@@ -24,7 +24,7 @@ export default function AdminSidebar({ activeTab, setActiveTab }) {
       {/* Logo */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
-        <p className="text-sm text-gray-400 text-white mt-2">Active</p>
+        {/* <p className="text-sm text-gray-400 text-white mt-2">Active</p> */}
       </div>
 
       {/* Menu Items */}

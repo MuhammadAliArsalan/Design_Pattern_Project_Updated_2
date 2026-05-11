@@ -59,8 +59,8 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-2">Manage users, courses, and platform analytics</p>
+            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+            <p className="text-white mt-2">Manage users, courses, and platform analytics</p>
           </div>
 
           {/* Content based on active tab */}
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
           )}
           {activeTab === "users" && <UserManagement token={token} />}
           {activeTab === "courses" && <CourseManagement token={token} />}
-          {activeTab === "analytics" && <PaymentAnalytics token={token} />}
+          {/* {activeTab === "analytics" && <PaymentAnalytics token={token} />} */}
         </div>
       </div>
     </div>
